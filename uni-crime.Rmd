@@ -1,0 +1,301 @@
+---
+title: "2014-2022 college crime data"
+output: html_notebook
+---
+
+This is an analysis of 2014-2021 Clery Act data, plus 2022 data published by individual institutions. This data includes 21 Maryland institutions that have a combined enrollment of at least 1,000 undergraduates and graduates.
+
+The CSV file used was joined and cleaned by The Baltimore Sun, but is not included in this repository. You can download the CSV here. Enrollment data was xxxxx
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+### Load in two data files, clean up a bit
+```{r}
+enrollment <- read_csv("enrollment_ten_years_v2.csv") %>% clean_names() %>% pivot_longer(cols=c("x2012_13_fte_12_month_enrollment":"x2021_22_fte_12_month_enrollment"), names_to = "year", values_to = "enrollment") %>% mutate(year1 = substr(year, 2,3)) %>% mutate(year2 = substr(year, 7,8))
+
+enrollment <- enrollment %>% mutate(year = paste(year1,year2, sep="")) %>% select(unitid, institution_name, year, enrollment) %>% filter(year != "2013")
+
+enrollment_md <- enrollment %>% group_by(year) %>% summarise(enrollment = sum(enrollment))
+```
+
+```{r}
+df <- read_csv("college_crime.csv")
+
+df <- df %>% mutate(survey_year = as.character(survey_year))
+
+df <- df %>% full_join(enrollment, by=c("survey_year"="year","institution_me"="institution_name"))
+```
+#### Integrity checks
+## How many survey years?
+```{r}
+df %>% group_by(survey_year) %>% summarise(count = n())
+```
+2014-2022
+
+## How many institution names?
+```{r}
+df %>% group_by(institution_me) %>% summarise(count = n()) %>% arrange(desc(count))
+```
+21 schools at several different counts for how many
+
+## Looking at Johns Hopkins for an example of how campuses and institution sizes are organized
+```{r}
+df %>% filter(institution_me == "Johns Hopkins University") %>% select(survey_year, institution_me, campus_me, enrollment) %>% group_by(survey_year, institution_me, campus_me, enrollment) %>% summarise(count = n())
+```
+## By category
+```{r}
+df %>% group_by(category) %>% summarise(count = n())
+```
+3 categories
+172 non campus
+282 on campus
+282 public property
+
+## Campus name
+```{r}
+df %>% group_by(institution_me) %>% summarise(count = n()) %>% arrange(desc(count))
+
+df %>% group_by(institution_me, campus_me) %>% summarise(count = n()) %>% arrange(desc(count))
+```
+
+32 campus names across 21 campuses
+
+## JHU example
+```{r}
+jhu <- df %>% filter(institution_me == "Johns Hopkins University")
+
+jhu %>% group_by(campus_me) %>% summarise(count = n())
+```
+Six campuses
+
+#### Analysis
+## Creating subset of MD 2014-2022 total, violent, sexual, property crime from main df 
+```{r}
+total_crime_md <- 
+  df %>% 
+  group_by(survey_year) %>% 
+  summarise(total_crime = sum(total_crime))
+
+violent_crime_md <- 
+  df %>% 
+  group_by(survey_year) %>% 
+  summarise(violent_crime = sum(violent_crime))
+
+sexual_crime_md <- 
+  df %>% 
+  group_by(survey_year) %>% 
+  summarise(sexual_crime = sum(sexual_crime))
+
+property_crime_md <- 
+  df %>% mutate(property_crime = arson+motor_vehicle_theft+burglary) 
+  
+property_crime_md <- 
+  df %>% 
+  group_by(survey_year) %>% 
+  summarise(property_crime = sum(property_crime))
+```
+
+## Join with enrollment table
+```{r}
+total_crime_md <- total_crime_md %>% inner_join(enrollment_md, by=c("survey_year"="year"))
+
+violent_crime_md <- violent_crime_md %>% inner_join(enrollment_md, by=c("survey_year"="year"))
+
+sexual_crime_md <- sexual_crime_md %>% inner_join(enrollment_md, by=c("survey_year"="year"))
+
+propety_crime_md <- property_crime_md %>% inner_join(enrollment_md, by=c("survey_year"="year"))
+```
+
+## Calculate rates
+```{r}
+total_crime_md <- total_crime_md %>% mutate(total_crime_rate = total_crime/enrollment*1000)
+
+violent_crime_md <- violent_crime_md %>% mutate(violent_crime_rate = violent_crime/enrollment*1000)
+
+sexual_crime_md <- sexual_crime_md %>% mutate(sexual_crime_rate = sexual_crime/enrollment*1000)
+
+property_crime_md <- propety_crime_md %>% mutate(property_crime_rate = property_crime/enrollment*1000)
+```
+
+### 2022 average rates by university
+## Filtering by 2022 for each crime category and adding for each university
+```{r}
+df <- df %>% mutate(survey_year = as.numeric(survey_year)) 
+
+total_crime_uni_2022 <- df %>% filter(survey_year == "2022") %>% group_by(survey_year, institution_me) %>% summarise(total_crime = sum(total_crime)) %>% mutate(survey_year = as.character(survey_year))
+
+violent_crime_uni_2022 <- df %>% filter(survey_year == "2022") %>% group_by(survey_year, institution_me) %>% summarise(violent_crime = sum(violent_crime)) %>% mutate(survey_year = as.character(survey_year))
+
+sexual_crime_uni_2022 <- df %>% filter(survey_year == "2022") %>% group_by(survey_year, institution_me) %>% summarise(sexual_crime = sum(sexual_crime)) %>% mutate(survey_year = as.character(survey_year))
+```
+## Join with enrollment and calculate rate
+```{r}
+total_crime_uni_2022 <- total_crime_uni_2022 %>% inner_join(enrollment, by=c("survey_year"="year","institution_me"="institution_name"))
+
+total_crime_uni_2022 <- total_crime_uni_2022 %>% mutate(total_crime_rate = total_crime/enrollment*1000)
+
+
+violent_crime_uni_2022 <- violent_crime_uni_2022 %>% inner_join(enrollment, by=c("survey_year"="year","institution_me"="institution_name"))
+
+violent_crime_uni_2022 <- violent_crime_uni_2022 %>% mutate(violent_crime_rate = violent_crime/enrollment*1000)
+
+
+sexual_crime_uni_2022  <- sexual_crime_uni_2022  %>% inner_join(enrollment, by=c("survey_year"="year","institution_me"="institution_name"))
+
+sexual_crime_uni_2022  <- sexual_crime_uni_2022  %>% mutate(sexual_crime_rate = sexual_crime/enrollment*1000)
+```
+
+### Average rates by university, 2014-2022
+## Group by year and college for each crime category
+```{r}
+total_crime_uni <- df %>% group_by(survey_year, institution_me) %>% summarise(total_crime = sum(total_crime)) 
+
+violent_crime_uni <- df %>% group_by(survey_year, institution_me) %>% summarise(violent_crime = sum(violent_crime)) 
+
+sexual_crime_uni <- df %>% group_by(survey_year, institution_me) %>% summarise(sexual_crime = sum(sexual_crime))
+```
+
+## Join enrollment, calculate rates
+```{r}
+total_crime_uni <- total_crime_uni %>% mutate(survey_year = as.character(survey_year)) %>% inner_join(enrollment,by=c("survey_year"="year","institution_me"="institution_name"))
+
+total_crime_uni <- total_crime_uni %>% mutate(total_crime_rate = total_crime/enrollment*1000)
+
+
+violent_crime_uni <- violent_crime_uni %>% mutate(survey_year = as.character(survey_year))%>% inner_join(enrollment, by=c("survey_year"="year","institution_me"="institution_name"))
+
+violent_crime_uni <- violent_crime_uni %>% mutate(violent_crime_rate = violent_crime/enrollment*1000)
+
+
+sexual_crime_uni  <- sexual_crime_uni  %>% mutate(survey_year = as.character(survey_year)) %>% inner_join(enrollment,by=c("survey_year"="year","institution_me"="institution_name"))
+
+sexual_crime_uni  <- sexual_crime_uni  %>% mutate(sexual_crime_rate = sexual_crime/enrollment*1000)
+```
+
+## 
+```{r}
+sum_by_type_md <- df %>% group_by(survey_year) %>% 
+  summarise(sum_violent_crime = sum(violent_crime),
+            sum_murder = sum(murder_non_negligent_manslaughter),
+            sum_neg_manslaughter = sum(negligent_manslaughter),
+            sum_rape = sum(rape),
+            sum_fondling = sum(fondling),
+            sum_incest = sum(incest),
+            sum_statutory = sum(statutory_rape),
+            sum_robbery = sum(robbery), 
+            sum_agg_assault = sum(aggravated_assault),
+            sum_burglary = sum(burglary),
+            sum_motor_vehicle = sum(motor_vehicle_theft),
+            sum_arson = sum(arson)) 
+
+
+sum_by_type_md <- sum_by_type_md %>% inner_join(enrollment_md, by=c("survey_year"="year"))
+
+
+sum_by_type_md <- sum_by_type_md %>% mutate(violent_crime_rate = sum_violent_crime/enrollment*1000) %>%
+  mutate(murder_rate = sum_murder/enrollment*1000) %>%
+  mutate(neg_manslaughter_rate = sum_neg_manslaughter/enrollment*1000) %>%
+  mutate(fondling_rate = sum_fondling/enrollment*1000) %>%
+  mutate(incest_rate = sum_incest/enrollment*1000) %>%
+  mutate(statutory_rate = sum_statutory/enrollment*1000) %>%
+  mutate(murder_rate = sum_murder/enrollment*1000) %>%
+  mutate(robbery_rate = sum_robbery/enrollment*1000) %>%
+  mutate(agg_rate = sum_agg_assault/enrollment*1000) %>%
+  mutate(rape_rate = sum_rape/enrollment*1000) %>% 
+  mutate(burglary_rate = sum_burglary/enrollment*1000) %>%
+  mutate(motor_vehicle_rate = sum_motor_vehicle/enrollment*1000) %>%
+  mutate(arson_rate = sum_arson/enrollment*1000)
+```
+## Percentage by violent crime type, Maryland 2022
+```{r}
+df %>% group_by(survey_year) %>% summarise(sum_violent_crime = sum(violent_crime), sum_murder = sum(murder_non_negligent_manslaughter), sum_rape = sum(rape), sum_robbery = sum(robbery), sum_agg_assault = sum(aggravated_assault)) %>% mutate(pct_murder = sum_murder/sum_violent_crime*100, pct_rape = sum_rape/sum_violent_crime*100, pct_robbery = sum_robbery/sum_violent_crime*100, pct_agg_assault = sum_agg_assault/sum_violent_crime*100)
+```
+## Calculating count for rape without the NAs - added 8 to make 108 in 2022 to account for the 8 forcible sex offenses at Bowie and UMD Eastern Shore
+```{r}
+df %>% filter(!is.na(rape)) %>% filter(survey_year == "2022") %>% 
+  group_by(survey_year) %>% 
+  summarise(sum_rape = sum(rape))
+```
+## Percent of each crime by college
+```{r}
+sums_2022_by_uni <- df %>% filter(survey_year == "2022") %>% group_by(institution_me) %>% summarise(sum_total_crime = sum(total_crime), sum_violent_crime = sum(violent_crime), sum_property_crime = sum(property_crime), sum_sexual_crime = sum(sexual_crime))
+
+pct_2022_by_uni <- sums_2022_by_uni %>% mutate(pct_violent = sum_violent_crime/sum_total_crime*100) %>% mutate(pct_property = sum_property_crime/sum_total_crime*100) %>% mutate(pct_sexual = sum_sexual_crime/sum_total_crime*100) 
+```
+
+### Aggravated assault - Share of aggravated assasults has grown to nearly 50% in 2022
+
+## Create table of aggravated assault rates by year and by college
+```{r}
+agg_assault_crime_uni <- df %>% group_by(survey_year, institution_me) %>% summarise(ag_crime = sum(aggravated_assault)) %>% mutate(survey_year = as.character(survey_year))
+
+agg_assault_crime_uni  <- agg_assault_crime_uni %>% inner_join(enrollment, by=c("survey_year"="year","institution_me"="institution_name"))
+
+agg_assault_crime_uni  <- agg_assault_crime_uni %>% mutate(ag_crime_rate = ag_crime/enrollment*1000)
+
+agg_assault_crime_uni <- agg_assault_crime_uni %>% select(survey_year, institution_me, ag_crime_rate) %>% pivot_wider(names_from = survey_year, values_from = ag_crime_rate)
+```
+
+## Who has the most aggravated assaults, raw numbers
+```{r}
+agg_assault_2022 <- df %>% filter(survey_year == "2022") %>% group_by(institution_me) %>% summarise(sum = sum(aggravated_assault))
+```
+## Looking at JHU raw aggravated assaults
+```{r}
+agg_assault_jhu <- df %>% filter(institution_me == "Johns Hopkins University") %>% group_by(survey_year, institution_me) %>% summarise(jhu_agg_assaults = sum(aggravated_assault))
+```
+
+## Aggravated assaults by on campus, non campus, public property
+```{r}
+agg_assault <- df %>% group_by(survey_year, category) %>% summarise(sum_agg = sum(aggravated_assault))
+
+agg_assault <- agg_assault %>% pivot_wider(names_from = category, values_from = sum_agg)
+```
+
+```{r}
+agg_assault <- agg_assault %>% mutate(agg = sum(`non-campus`+`public property`+`on campus`)) %>% mutate(pct_on_campus = `on campus`/`agg`*100)
+```
+
+## Bowie aggravated assaults
+```{r}
+agg_assault_bowie <- df %>% filter(institution_me == "Bowie State University") %>% group_by(survey_year, institution_me) %>% summarise(ag_bowie= sum(aggravated_assault))
+```
+## UMD Ccollege Park aggravated assaults
+```{r}
+ag_assault_cp <- df %>% filter(institution_me == "University of Maryland-College Park") %>% group_by(survey_year, institution_me) %>% summarise(ag_cp = sum(aggravated_assault))
+```
+## Raw aggravated assaults by college and by year
+```{r}
+ag_assault_uni_raw <- df %>% group_by(survey_year, institution_me) %>% summarise(ag_assault = sum(aggravated_assault)) %>% pivot_wider(names_from = survey_year, values_from = ag_assault)
+```
+
+## JHU aggravated assault breakdown by campus
+```{r}
+jhu_agg_campuses <- df %>% filter(institution_me == "Johns Hopkins University") %>% filter(category == "on campus") %>% group_by(survey_year, campus_me) %>% summarise(sum = sum(aggravated_assault))
+
+jhu_agg_campuses <- jhu_agg_campuses %>% pivot_wider(names_from = survey_year, values_from = sum)
+```
+
+## Aggravated assaults at JHU by category
+```{r}
+df %>% filter(survey_year == "2022") %>% filter(institution_me == "Johns Hopkins University") %>% group_by(category) %>% summarise(aggravated_assault = sum(aggravated_assault))
+
+```
+## Aggravated assaults at JHU by campus, on campus only
+```{r}
+df %>% filter(survey_year == "2022") %>% filter(institution_me == "Johns Hopkins University")  %>% filter(category=="on campus") %>% group_by(campus_me) %>% summarise(aggravated_assault = sum(aggravated_assault))
+```
+
+## Creating table for Datawrapper chart 1
+```{r}
+crime_uni_chart <- total_crime_md %>% inner_join(violent_crime_md, by= "survey_year") %>% inner_join(sexual_crime_md, by= "survey_year") %>% inner_join(property_crime_md, by= "survey_year")
+```
+
+## Creating table for Datawrapper chart 2
+```{r}
+violent_crime_chart <- sum_by_type_md %>% select(survey_year, violent_crime_rate, agg_rate, rape_rate, robbery_rate, murder_rate)
+```
+Rate for rape externally calculated due to 
