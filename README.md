@@ -6,7 +6,7 @@ This analysis was completed for a xxxx xx, 2023, Baltimore Sun story about crime
 
 ### Methodology
 
-The Baltimore Sun’s analysis uses data from 2014 through 2022. Data from 2014 to 2021 is from the U.S. Department of Education Office of Postsecondary Education/Campus Safety and Security Survey and was retrieved from the online Campus Safety and Security Data Analysis Cutting Tool. Data for 2022 was pulled from institutions’ individual security reports. Data from 2013 was not included due to disaggregated sexual crime data. 
+The Baltimore Sun’s analysis uses data from 2014 through 2022. Data from 2014 to 2021 is from the U.S. Department of Education Office of Postsecondary Education/Campus Safety and Security Survey and was retrieved from the online [Campus Safety and Security Data Analysis Cutting Tool](https://ope.ed.gov/campussafety/#/). Data for 2022 was pulled from institutions’ individual security reports. Data from 2013 was not included due to disaggregated sexual crime data. 
 
 Enrollment data is 12-month full-time equivalent data from the National Center for Education Statistics/Integrated Postsecondary Education Data System. Data was matched to crime years using the last year of the school year (2012-2013 enrollment data was used for 2013 crime data, for example).
 
