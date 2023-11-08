@@ -20,7 +20,7 @@ Data is self-reported by each institution and represents crimes reported to loca
 
 These are all the crime types captured by the data:
 
-- Non-negligent manslaughter 
+- Non-negligent killings
 - Negligent manslaughter
 - Rape
 - Fondling
@@ -34,7 +34,7 @@ These are all the crime types captured by the data:
 
 These are the three ways The Sun’s analysis categorized crimes:
 
-Violent crime: Non-negligent manslaughter, rape, robbery and aggravated assault
+Violent crime: Non-negligent killing, rape, robbery and aggravated assault
 
 Property crime: Burglary, motor vehicle theft and arson
 
@@ -45,12 +45,11 @@ The 21 colleges and universities in this analysis are all four-year public insti
 
 ### Data notes
 
-Bowie State University’s and the University of Maryland Eastern Shore’s in 2022 public reports did not disaggregate sexual crimes into rape, fondling, incest and statutory rape categories, but instead classified a sexual crime as either forcible (rape, fondling) or non-forcible (incest, statutory rape). Because of this, any violent crime rates calculated in 2022 for Bowie and UMES include each forcible sex offense. The total number of rape and fondling crimes in 2022 for Bowie was 5 and for UMD Eastern Shore was 3. Overall rankings do not change when these crimes are excluded from the data. 
-
+Bowie State University’s and the University of Maryland Eastern Shore’s in 2022 public reports did not disaggregate sexual crimes into rape, fondling, incest and statutory rape categories, but instead classified a sexual crime as either forcible (rape, fondling) or non-forcible (incest, statutory rape). Because of this, the analysis includes the 8 forcible crimes, five at Bowie and three at UMD, Eastern Shore, toward the violent crime rate as well as additional calculations. 
 
 All Maryland locations an institution reported data for were included, with a few exceptions. 
 - Towson University Northeast data was not available prior to 2018.
 - Johns Hopkins’ Bayview Medical Center did not have data available prior to 2016.
-- Data from the shared campuses at the University System Of Maryland At Hagerstown, the Universities at Shady Grove and the University System of Maryland at Southern Maryland was excluded due to potential overlap and to better understand crime rates by university.
+- Data from the shared campuses at the University System Of Maryland At Hagerstown, the Universities at Shady Grove and the University System of Maryland at Southern Maryland was excluded to prevent duplicates.
 
 Have questions about the data? Email Baltimore Sun reporter Annie Jennemann at ajennemann@baltsun.com.
