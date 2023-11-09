@@ -1,6 +1,6 @@
 ### About the story
 
-This analysis was completed for a Baltimore Sun story about crime reported by Maryland colleges and universities. There are two main data files.
+This analysis was completed for [a Baltimore Sun story about crime reported by Maryland colleges and universities](https://www.baltimoresun.com/education/bs-md-campus-crime-data-2022-20231109-xq6fr2nvmvh2vohoecwtkng6k4-story.html). There are two main data files.
 -  [2014-2022 crime data](https://github.com/Baltimore-Sun/college-crime/blob/main/college_crime.csv)
 -  [2014-2022 enrollment data](https://github.com/Baltimore-Sun/college-crime/blob/main/enrollment.csv)
 
